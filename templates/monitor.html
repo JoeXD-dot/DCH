@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Monitor - XDR Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-eye"></i> Real-time Monitor</h1>
+            <nav>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <button id="stop-monitoring" class="btn btn-danger">
+                    <i class="fas fa-stop"></i> Stop Monitoring
+                </button>
+            </nav>
+        </header>
+
+        <div class="monitor-dashboard">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3>Total Incidents</h3>
+                    <div class="stat-value" id="total-incidents">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Last Update</h3>
+                    <div class="stat-value" id="last-update">Never</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Status</h3>
+                    <div class="stat-value" id="monitor-status">Connecting...</div>
+                </div>
+            </div>
+
+            <div class="monitor-content">
+                <div class="panel">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Recent Incidents</h2>
+                    <div id="incidents-list" class="incidents-list">
+                        <p class="no-data">No incidents yet...</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2><i class="fas fa-terminal"></i> Activity Log</h2>
+                    <div id="activity-log" class="activity-log">
+                        <p class="log-entry info">Connecting to monitoring service...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let totalIncidents = 0;
+
+        socket.on('connect', function() {
+            console.log('Connected to monitoring service');
+        });
+
+        socket.on('status_update', function(data) {
+            addLogEntry(data.message, data.type);
+            document.getElementById('last-update').textContent = data.timestamp;
+            document.getElementById('monitor-status').textContent = 'Active';
+        });
+
+        socket.on('new_incidents', function(data) {
+            totalIncidents += data.count;
+            document.getElementById('total-incidents').textContent = totalIncidents;
+            document.getElementById('last-update').textContent = data.timestamp;
+
+            displayIncidents(data.incidents);
+            addLogEntry(`Found ${data.count} new incidents`, 'success');
+        });
+
+        function addLogEntry(message, type) {
+            const logContainer = document.getElementById('activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+
+            const logEntry = document.createElement('p');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            // Keep only last 100 entries
+            while (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        function displayIncidents(incidents) {
+            const incidentsList = document.getElementById('incidents-list');
+
+            if (incidents.length === 0) {
+                incidentsList.innerHTML = '<p class="no-data">No incidents found</p>';
+                return;
+            }
+
+            incidentsList.innerHTML = '';
+
+            incidents.forEach(incident => {
+                const incidentDiv = document.createElement('div');
+                incidentDiv.className = 'incident-item';
+
+                const severityClass = getSeverityClass(incident.severity);
+                const statusClass = getStatusClass(incident.status);
+
+                incidentDiv.innerHTML = `
+                    <div class="incident-header">
+                        <span class="incident-id">ID: ${incident.incident_id || 'Unknown'}</span>
+                        <span class="severity ${severityClass}">
+                            ${getSeverityText(incident.severity)}
+                        </span>
+                        <span class="status ${statusClass}">
+                            ${getStatusText(incident.status)}
+                        </span>
+                    </div>
+                    <div class="incident-description">
+                        ${incident.description || 'No description available'}
+                    </div>
+                    <div class="incident-meta

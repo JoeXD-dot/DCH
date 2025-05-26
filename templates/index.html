@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palo Alto XDR Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> Palo Alto XDR Monitor</h1>
+            <div class="status-bar">
+                <span class="status {{ 'active' if is_valid else 'expired' }}">
+                    {{ expiration_status }}
+                </span>
+                <span class="monitoring-status {{ 'active' if monitoring_active else 'inactive' }}">
+                    <i class="fas {{ 'fa-play' if monitoring_active else 'fa-stop' }}"></i>
+                    {{ 'Monitoring Active' if monitoring_active else 'Monitoring Stopped' }}
+                </span>
+            </div>
+        </header>
+
+        {% if not is_valid %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ expiration_status }}
+        </div>
+        {% endif %}
+
+        <div class="dashboard">
+            <div class="card">
+                <h2><i class="fas fa-cog"></i> Configuration</h2>
+                <p>Set up your monitoring parameters and filters</p>
+                <a href="{{ url_for('config') }}" class="btn btn-primary">
+                    <i class="fas fa-settings"></i> Configure Monitoring
+                </a>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Real-time Monitor</h2>
+                <p>View live incident data and monitoring status</p>
+                <a href="{{ url_for('monitor') }}" class="btn btn-success">
+                    <i class="fas fa-eye"></i> Start Monitoring
+                </a>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-file-alt"></i> Log Files</h2>
+                <p>Access and download monitoring logs</p>
+                <button class="btn btn-info" onclick="downloadLogs()">
+                    <i class="fas fa-download"></i> Download Logs
+                </button>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-network-wired"></i> Connection Test</h2>
+                <p>Test connection to Palo Alto XDR API</p>
+                <button class="btn btn-warning" onclick="testConnection()">
+                    <i class="fas fa-plug"></i> Test Connection
+                </button>
+                <div id="connection-result"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Infocean's XDR Monitor | Expires: {{ expiration_status }}</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

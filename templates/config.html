@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration - XDR Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cog"></i> Monitor Configuration</h1>
+            <nav>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </nav>
+        </header>
+
+        <form id="config-form" class="config-form">
+            <div class="form-section">
+                <h2><i class="fas fa-key"></i> API Credentials</h2>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Important:</strong> Enter your Palo Alto XDR API credentials. These will be used to authenticate with the XDR API.
+                </div>
+
+                <div class="form-group">
+                    <label for="api_key_id">API Key ID:</label>
+                    <input type="text" id="api_key_id" name="api_key_id"
+                           value="{{ default_config.API_KEY_ID }}"
+                           placeholder="Enter your API Key ID" required>
+                    <small class="form-help">Your XDR API Key ID (usually a number)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="api_key">API Key:</label>
+                    <textarea id="api_key" name="api_key" rows="3"
+                              placeholder="Enter your API Key" required>{{ default_config.API_KEY }}</textarea>
+                    <small class="form-help">Your XDR API Key (long string)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="host">XDR Host:</label>
+                    <input type="text" id="host" name="host"
+                           value="{{ default_config.HOST }}"
+                           placeholder="api-dch.xdr.sg.paloaltonetworks.com" required>
+                    <small class="form-help">Your XDR API host (without https://)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="endpoint">API Endpoint:</label>
+                    <input type="text" id="endpoint" name="endpoint"
+                           value="{{ default_config.ENDPOINT }}"
+                           placeholder="/public_api/v1/incidents/get_incidents">
+                    <small class="form-help">API endpoint path (usually default is fine)</small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2><i class="fas fa-server"></i> Basic Settings</h2>
+
+                <div class="form-group">
+                    <label for="syslog_server">Syslog Server IP:</label>
+                    <input type="text" id="syslog_server" name="syslog_server"
+                           placeholder="127.0.0.1" required>
+                    <small class="form-help">IP address where syslog data will be sent</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="polling_interval">Polling Interval (seconds):</label>
+                    <input type="number" id="polling_interval" name="polling_interval"
+                           value="60" min="1" max="3600">
+                    <small class="form-help">How often to check for new incidents (1-3600 seconds)</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="search_from">Search From:</label>
+                        <input type="number" id="search_from" name="search_from"
+                               value="0" min="0">
+                        <small class="form-help">Starting index for search results</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="search_to">Search To:</label>
+                        <input type="number" id="search_to" name="search_to"
+                               value="100" min="1">
+                        <small class="form-help">Maximum number of results to fetch</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2><i class="fas fa-sort"></i> Sorting Options</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sort_field">Sort Field:</label>
+                        <select id="sort_field" name="sort_field">
+                            <option value="incident_id">Incident ID</option>
+                            <option value="creation_time">Creation Time</option>
+                            <option value="modification_time">Modification Time</option>
+                            <option value="severity">Severity</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sort_order">Sort Order:</label>
+                        <select id="sort_order" name="sort_order">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2><i class="fas fa-filter"></i> Filters</h2>
+
+                <div class="form-group">
+                    <label for="severity_filter">Severity Filter:</label>
+                    <select id="severity_filter" name="severity_filter">
+                        <option value="all">All Severities</option>
+                        <option value="1">Low</option>
+                        <option value="2">Medium</option>
+                        <option value="3">High</option>
+                        <option value="4">Critical</option>
+                        <option value="3,4">High & Critical</option>
+                        <option value="1,2">Low & Medium</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status_filter">Status Filter:</label>
+                    <select id="status_filter" name="status_filter">
+                        <option value="all">All Statuses</option>
+                        <option value="1">New</option>
+                        <option value="2">Under Investigation</option>
+                        <option value="3">Resolved - Threat Handled</option>
+                        <option value="4">Resolved - Known Issue</option>
+                        <option value="5">Resolved - Duplicate</option>
+                        <option value="6">Resolved - False Positive</option>
+                        <option value="7">Resolved - Other</option>
+                        <option value="1,2">Active (New & Under Investigation)</option>
+                        <option value="3,4,5,6,7">All Resolved</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="time_filter">Time Filter:</label>
+                    <select id="time_filter" name="time_filter">
+                        <option value="all">All Time</option>
+                        <option value="1">Last Hour</option>
+                        <option value="2">Last 24 Hours</option>
+                        <option value="3">Last 7 Days</option>
+                        <option value="4">Last 30 Days</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="host_filter">Host Filter:</label>
+                    <input type="text" id="host_filter" name="host_filter"
+                           placeholder="host1,host2 or 'all' for all hosts">
+                    <small class="form-help">Comma-separated list of hostnames to filter by</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description_filter">Description Filter:</label>
+                    <input type="text" id="description_filter" name="description_filter"
+                           placeholder="Search text or 'all' for all descriptions">
+                    <small class="form-help">Text to search for in incident descriptions</small>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-warning" onclick="testConnectionWithForm()">
+                    <i class="fas fa-plug"></i> Test Connection
+                </button>
+                <button type="button" class="btn btn-info" onclick="loadDefaultCredentials()">
+                    <i class="fas fa-undo"></i> Load Defaults
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-play"></i> Start Monitoring
+                </button>
+            </div>
+        </form>
+
+        <div id="config-result"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Form submission handler
+        document.getElementById('config-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const config = {};
+
+            for (let [key, value] of formData.entries()) {
+                config[key] = value.trim();
+            }
+
+            // Validate required fields
+            const requiredFields = ['api_key_id', 'api_key', 'host', 'syslog_server'];
+            const missingFields = requiredFields.filter(field => !config[field]);
+
+            if (missingFields.length > 0) {
+                showNotification(`Missing required fields: ${missingFields.join(', ')}`, 'error');
+                return;
+            }
+
+            // Validate IP address
+            if (!isValidIP(config.syslog_server)) {
+                showNotification('Please enter a valid IP address for Syslog Server', 'error');
+                return;
+            }
+
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+
+            fetch('/api/start_monitoring', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Monitoring started successfully!', 'success');
+
+                    // Save configuration
+                    localStorage.setItem('xdr_config', JSON.stringify(config));
+
+                    // Redirect to monitor page after short delay
+                    setTimeout(() => {
+                        window.location.href = '/monitor';
+                    }, 1500);
+                } else {
+                    showNotification('Error starting monitoring: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Error starting monitoring: ' + error.message, 'error');
+                console.error('Start monitoring error:', error);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        });
+
+        // Test connection with form data
+        function testConnectionWithForm() {
+            const formData = new FormData(document.getElementById('config-form'));
+            const config = {};
+
+            for (let [key, value] of formData.entries()) {
+                config[key] = value.trim();
+            }
+
+            // Validate required API fields
+            const requiredFields = ['api_key_id', 'api_key', 'host'];
+            const missingFields = requiredFields.filter(field => !config[field]);
+
+            if (missingFields.length > 0) {
+                showNotification(`Missing required API fields: ${missingFields.join(', ')}`, 'error');
+                return;
+            }
+
+            const button = event.target;
+            const originalText = button.innerHTML;
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+
+            const resultDiv = document.getElementById('config-result');
+            resultDiv.innerHTML = '';
+
+            fetch('/api/test_connection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultClass = data.success ? 'success' : 'error';
+                const icon = data.success ? 'fa-check-circle' : 'fa-exclamation-triangle';
+
+                resultDiv.innerHTML = `
+                    <div class="alert alert-${resultClass}">
+                        <i class="fas ${icon}"></i>
+                        <strong>${data.success ? 'Success:' : 'Error:'}</strong> ${data.message}
