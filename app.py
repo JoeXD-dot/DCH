@@ -463,4 +463,4 @@ if __name__ == '__main__':
     print("Press Ctrl+C to stop")
 
     # Fix for the Werkzeug error - use allow_unsafe_werkzeug=True
-    socketio.run(app, host='0.0.0.0', port=5001, debug=False, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=80, debug=False, allow_unsafe_werkzeug=True)
